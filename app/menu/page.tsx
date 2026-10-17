@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { initialMenuItems, initialRestaurantConfig, initialCategories } from '../data/initialMenu';
 import { MenuItem } from '../types/menu';
 import {
@@ -17,12 +17,11 @@ import {
   ChevronRight,
   LayoutGrid,
   Rows3,
-  Layers,
   Leaf,
-  Info,
+  ArrowUp,
 } from 'lucide-react';
 
-const FALLBACK_FOOD_IMG = 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=800&q=80';
+const FALLBACK_FOOD_IMG = '/zingers/classic.jpg';
 
 export default function MobileMenuPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -31,11 +30,35 @@ export default function MobileMenuPage() {
   const [viewMode, setViewMode] = useState<'showcase' | 'grid'>('showcase');
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
 
+  // Scroll animation states
+  const [scrollY, setScrollY] = useState<number>(0);
+  const [scrollProgress, setScrollProgress] = useState<number>(0);
+  const [isSearchExpanded, setIsSearchExpanded] = useState<boolean>(false);
+  const stickySearchInputRef = useRef<HTMLInputElement>(null);
+
   // State for which dishes have cheese slice added: dishId -> boolean
   const [cheeseMap, setCheeseMap] = useState<Record<string, boolean>>({});
 
   // State for veg nuggets variant: dishId -> variantName
   const [vegVariantMap, setVegVariantMap] = useState<Record<string, string>>({});
+
+  // Passive scroll listener for smooth real-time animations
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      setScrollY(currentY);
+
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        setScrollProgress(Math.min(100, Math.max(0, (currentY / totalHeight) * 100)));
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const isScrolled = scrollY > 25;
 
   const toggleCheese = (dishId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -67,6 +90,13 @@ export default function MobileMenuPage() {
     return p;
   };
 
+  const handleCategorySelect = (cat: string) => {
+    setSelectedCategory(cat);
+    if (scrollY > 160) {
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+  };
+
   // Filtered items
   const filteredItems = useMemo(() => {
     return initialMenuItems.filter((item) => {
@@ -94,136 +124,238 @@ export default function MobileMenuPage() {
 
   return (
     <div className="min-h-screen text-white font-sans selection:bg-amber-500 selection:text-black pb-28 bg-doodle relative">
-      {/* Top Mobile App Header */}
-      <header className="sticky top-0 z-40 bg-[#0c0c0f]/95 backdrop-blur-xl border-b border-white/5 px-4 py-3 shadow-2xl">
-        <div className="max-w-md mx-auto flex items-center justify-between gap-3">
-          {/* Logo & Cafe Identity */}
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="relative shrink-0">
-              <div className="w-11 h-11 rounded-2xl overflow-hidden p-0.5 bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-600 shadow-lg shadow-amber-500/25">
-                <img
-                  src="/logo/001.jpg.jpeg"
-                  alt="Quick Bites Cafe Logo"
-                  className="w-full h-full object-contain rounded-xl bg-black"
+      {/* ======================================================== */}
+      {/* 🚀 ULTRA-SMOOTH STICKY ANIMATED HEADER & CATEGORY DECK    */}
+      {/* ======================================================== */}
+      <header
+        className={`sticky top-0 z-40 transition-all duration-300 ease-out ${
+          isScrolled
+            ? 'bg-[#09090e]/95 backdrop-blur-2xl shadow-2xl border-b border-amber-500/25'
+            : 'bg-[#0c0c0f]/95 backdrop-blur-xl border-b border-white/5 shadow-xl'
+        }`}
+      >
+        <div className="max-w-md mx-auto px-4">
+          {/* Top Identity Row - Animates between spacious & compact */}
+          <div
+            className={`flex items-center justify-between gap-3 transition-all duration-300 ease-out ${
+              isScrolled ? 'py-1.5' : 'py-3'
+            }`}
+          >
+            {/* Logo & Cafe Identity */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="relative shrink-0">
+                <div
+                  className={`overflow-hidden p-0.5 bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-600 shadow-lg shadow-amber-500/25 transition-all duration-300 ease-out ${
+                    isScrolled ? 'w-8 h-8 rounded-xl' : 'w-11 h-11 rounded-2xl'
+                  }`}
+                >
+                  <img
+                    src="/logo/001.jpg.jpeg"
+                    alt="Quick Bites Cafe Logo"
+                    className="w-full h-full object-contain rounded-xl bg-black"
+                  />
+                </div>
+                <span
+                  className={`absolute -bottom-0.5 -right-0.5 bg-emerald-500 border-2 border-[#0c0c0f] rounded-full transition-all duration-300 ${
+                    isScrolled ? 'w-2.5 h-2.5' : 'w-3.5 h-3.5'
+                  }`}
                 />
               </div>
-              <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-[#0c0c0f] rounded-full" />
-            </div>
 
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="font-black text-[15px] tracking-tight text-white truncate">
-                  Quick Bites Cafe
-                </h1>
-                <span className="bg-amber-500/15 text-amber-400 text-[10px] font-black uppercase px-2 py-0.5 rounded-full border border-amber-500/30">
-                  Palghar
-                </span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <h1
+                    className={`font-black tracking-tight text-white truncate transition-all duration-300 ${
+                      isScrolled ? 'text-sm' : 'text-[15px]'
+                    }`}
+                  >
+                    Quick Bites Cafe
+                  </h1>
+                  <span className="bg-amber-500/15 text-amber-400 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-amber-500/30 shrink-0">
+                    Palghar
+                  </span>
+                </div>
+
+                {/* Subtitle that folds away gracefully during scrolling */}
+                <div
+                  className={`transition-all duration-300 ease-out overflow-hidden ${
+                    isScrolled
+                      ? 'max-h-0 opacity-0 -translate-y-1'
+                      : 'max-h-6 opacity-100 mt-0.5 translate-y-0'
+                  }`}
+                >
+                  <p className="text-[11px] text-zinc-400 font-medium flex items-center gap-1.5">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-emerald-400 font-bold">Open Now</span>
+                    <span>•</span>
+                    <span>Closes 10:30 PM</span>
+                  </p>
+                </div>
               </div>
-              <p className="text-[11px] text-zinc-400 font-medium flex items-center gap-1.5 mt-0.5">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-emerald-400 font-bold">Open Now</span>
-                <span>•</span>
-                <span>Closes 10:30 PM</span>
-              </p>
+            </div>
+
+            {/* Header Action Buttons with Compact Scroll Morphing */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* Quick Search Toggle (appears in compact header when scrolled) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSearchExpanded(!isSearchExpanded);
+                  if (!isSearchExpanded) {
+                    setTimeout(() => stickySearchInputRef.current?.focus(), 150);
+                  }
+                }}
+                className={`rounded-xl border flex items-center justify-center transition-all active:scale-90 shadow-sm ${
+                  isScrolled ? 'w-8 h-8' : 'w-9 h-9'
+                } ${
+                  isSearchExpanded || (isScrolled && searchQuery)
+                    ? 'bg-amber-500 text-zinc-950 border-amber-400 font-bold'
+                    : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white hover:border-amber-500/50'
+                }`}
+                title="Search menu"
+              >
+                <Search className={isScrolled ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
+              </button>
+
+              <a
+                href="tel:07977684202"
+                className={`rounded-xl bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 flex items-center justify-center text-amber-400 hover:text-white transition-all active:scale-90 shadow-sm ${
+                  isScrolled ? 'w-8 h-8' : 'w-9 h-9'
+                }`}
+                title="Call Cafe"
+              >
+                <Phone className={isScrolled ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
+              </a>
+
+              <a
+                href="https://maps.google.com/?q=Shop+no+1+Dattaganga+beside+Hotel+Swaraj+Lakshmiwadi+Tembhode+Palghar"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`rounded-xl bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 flex items-center justify-center text-zinc-300 hover:text-white transition-all active:scale-90 shadow-sm ${
+                  isScrolled ? 'w-8 h-8' : 'w-9 h-9'
+                }`}
+                title="Directions"
+              >
+                <Navigation className={isScrolled ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
+              </a>
             </div>
           </div>
 
-          {/* Header Action Buttons */}
-          <div className="flex items-center gap-2 shrink-0">
-            <a
-              href="tel:07977684202"
-              className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 flex items-center justify-center text-amber-400 hover:text-white transition-all active:scale-90 shadow-sm"
-              title="Call Cafe"
-            >
-              <Phone className="w-4 h-4" />
-            </a>
-
-            <a
-              href="https://maps.google.com/?q=Shop+no+1+Dattaganga+beside+Hotel+Swaraj+Lakshmiwadi+Tembhode+Palghar"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-amber-500/50 flex items-center justify-center text-zinc-300 hover:text-white transition-all active:scale-90 shadow-sm"
-              title="Directions"
-            >
-              <Navigation className="w-4 h-4" />
-            </a>
+          {/* Expandable Search Input inside Sticky Header */}
+          <div
+            className={`transition-all duration-300 ease-out overflow-hidden ${
+              isSearchExpanded ? 'max-h-14 opacity-100 pb-2.5 pt-0.5' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+              <input
+                ref={stickySearchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search Zingers, Wings, Buckets, Nuggets..."
+                className="w-full pl-10 pr-9 py-2 rounded-xl bg-[#141419] border border-amber-500/40 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-amber-500 shadow-inner"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-0.5"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
+
+          {/* Integrated Sticky Category Carousel (Always Perfectly Pinned, ZERO Gap!) */}
+          <div className="py-2 border-t border-white/5 overflow-hidden">
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
+              {initialCategories.map((cat) => {
+                const count =
+                  cat === 'All'
+                    ? initialMenuItems.length
+                    : initialMenuItems.filter((i) => i.category === cat).length;
+                const isSelected = selectedCategory === cat;
+
+                const ICONS: Record<string, string> = {
+                  All: '✨',
+                  Zinger: '🍔',
+                  'Fried Chicken': '🍗',
+                  'Wing Flavours': '🔥',
+                  Buckets: '🪣',
+                  'Non-Veg Nuggets': '🍗',
+                  'Veg Nuggets': '🥦',
+                };
+
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => handleCategorySelect(cat)}
+                    className={`py-1.5 px-3 rounded-full text-xs font-black transition-all shrink-0 flex items-center gap-1.5 ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-zinc-950 shadow-md shadow-amber-500/30 scale-[1.03]'
+                        : 'bg-[#18181f]/90 hover:bg-[#202029] border border-white/5 text-zinc-300'
+                    }`}
+                  >
+                    <span>{ICONS[cat] || '🍽️'}</span>
+                    <span className="whitespace-nowrap">{cat}</span>
+                    <span
+                      className={`text-[9px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                        isSelected
+                          ? 'bg-zinc-950 text-amber-400'
+                          : 'bg-black/40 text-zinc-400'
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Scroll Progress Glow Bar */}
+        <div className="h-[2px] w-full bg-white/5 overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-amber-500 via-amber-300 to-amber-500 transition-all duration-150 ease-out"
+            style={{ width: `${scrollProgress}%` }}
+          />
         </div>
       </header>
 
-      {/* Main Content Area */}
+      {/* ======================================================== */}
+      {/* MAIN CONTENT AREA                                        */}
+      {/* ======================================================== */}
       <main className="max-w-md mx-auto px-4 pt-3 space-y-3.5">
-        {/* Modern Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search Zingers, Wings, Buckets, Nuggets..."
-            className="w-full pl-11 pr-10 py-3 rounded-2xl bg-[#141419]/90 backdrop-blur-md border border-white/10 text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-lg"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
-        {/* Category Carousel with Modern Aesthetic Pills */}
-        <div className="sticky top-[59px] z-30 bg-[#0c0c0f]/95 backdrop-blur-xl -mx-4 px-4 py-2 border-b border-white/5">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
-            {initialCategories.map((cat) => {
-              const count =
-                cat === 'All'
-                  ? initialMenuItems.length
-                  : initialMenuItems.filter((i) => i.category === cat).length;
-              const isSelected = selectedCategory === cat;
-
-              const ICONS: Record<string, string> = {
-                All: '✨',
-                Zinger: '🍔',
-                'Fried Chicken': '🍗',
-                'Wing Flavours': '🔥',
-                Buckets: '🪣',
-                'Non-Veg Nuggets': '🍗',
-                'Veg Nuggets': '🥦',
-              };
-
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`py-2 px-3.5 rounded-full text-xs font-black transition-all shrink-0 flex items-center gap-1.5 ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-zinc-950 shadow-lg shadow-amber-500/30 scale-[1.03]'
-                      : 'bg-[#18181f]/90 hover:bg-[#202029] border border-white/5 text-zinc-300'
-                  }`}
-                >
-                  <span>{ICONS[cat] || '🍽️'}</span>
-                  <span className="whitespace-nowrap">{cat}</span>
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
-                      isSelected
-                        ? 'bg-zinc-950 text-amber-400'
-                        : 'bg-black/40 text-zinc-400'
-                    }`}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+        {/* Main Search Bar (Visible at top of page) */}
+        {!isScrolled && (
+          <div className="relative animate-fade-in">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search Zingers, Wings, Buckets, Nuggets..."
+              className="w-full pl-11 pr-10 py-3 rounded-2xl bg-[#141419]/90 backdrop-blur-md border border-white/10 text-xs sm:text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all shadow-lg"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
-        </div>
+        )}
 
-        {/* Secondary Quick Filter & Layout View Switcher */}
-        <div className="flex items-center justify-between gap-2 pt-1">
+        {/* Quick Filter Badges & View Mode Switcher */}
+        <div className="flex items-center justify-between gap-2 pt-0.5">
           {/* Quick Filters */}
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
             <button
@@ -283,10 +415,10 @@ export default function MobileMenuPage() {
             <button
               type="button"
               onClick={() => setViewMode('showcase')}
-              title="Magazine Showcase View"
+              title="Showcase Cards"
               className={`p-1.5 rounded-lg transition-all ${
                 viewMode === 'showcase'
-                  ? 'bg-amber-500 text-zinc-950 shadow-md'
+                  ? 'bg-amber-500 text-zinc-950 shadow-md font-bold'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
@@ -295,10 +427,10 @@ export default function MobileMenuPage() {
             <button
               type="button"
               onClick={() => setViewMode('grid')}
-              title="2-Column Grid View"
+              title="2-Column Grid"
               className={`p-1.5 rounded-lg transition-all ${
                 viewMode === 'grid'
-                  ? 'bg-amber-500 text-zinc-950 shadow-md'
+                  ? 'bg-amber-500 text-zinc-950 shadow-md font-bold'
                   : 'text-zinc-400 hover:text-white'
               }`}
             >
@@ -328,7 +460,7 @@ export default function MobileMenuPage() {
         )}
 
         {/* ======================================================== */}
-        {/* VIEW MODE 1: SHOWCASE MAGAZINE CARDS (Visual & Cinematic) */}
+        {/* VIEW MODE 1: SHOWCASE MAGAZINE CARDS (Cinematic & Rich)   */}
         {/* ======================================================== */}
         {viewMode === 'showcase' && filteredItems.length > 0 && (
           <div className="space-y-5 pt-1">
@@ -341,7 +473,7 @@ export default function MobileMenuPage() {
                 <article
                   key={dish.id}
                   onClick={() => setSelectedDish(dish)}
-                  style={{ animationDelay: `${index * 30}ms` }}
+                  style={{ animationDelay: `${index * 25}ms` }}
                   className="group relative bg-gradient-to-b from-[#181822]/95 to-[#121219]/95 card-luxury-border rounded-[28px] overflow-hidden transition-all duration-300 shadow-2xl active:scale-[0.99] cursor-pointer animate-spring"
                 >
                   {/* Top Food Photography Canvas */}
@@ -356,7 +488,7 @@ export default function MobileMenuPage() {
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
                     />
 
-                    {/* Gradient Vignettes for dramatic contrast */}
+                    {/* Gradient Vignettes */}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#14141d] via-black/20 to-black/60 pointer-events-none" />
                     <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#181822] to-transparent pointer-events-none" />
 
@@ -551,7 +683,7 @@ export default function MobileMenuPage() {
         )}
 
         {/* ======================================================== */}
-        {/* VIEW MODE 2: 2-COLUMN MODERN GRID (Instagram Food Style) */}
+        {/* VIEW MODE 2: 2-COLUMN MODERN GRID (Instagram Food Style)  */}
         {/* ======================================================== */}
         {viewMode === 'grid' && filteredItems.length > 0 && (
           <div className="grid grid-cols-2 gap-3 pt-1">
@@ -680,6 +812,18 @@ export default function MobileMenuPage() {
           </a>
         </div>
       </div>
+
+      {/* Floating Back to Top Button (Smooth Scroll Animation) */}
+      {scrollY > 300 && (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-20 right-4 z-40 w-11 h-11 rounded-full bg-black/85 backdrop-blur-xl border border-amber-500/40 text-amber-400 flex items-center justify-center shadow-2xl shadow-black active:scale-90 transition-all hover:bg-amber-500 hover:text-black animate-spring"
+          title="Back to Top"
+        >
+          <ArrowUp className="w-5 h-5 stroke-[2.5]" />
+        </button>
+      )}
 
       {/* Fullscreen Mobile Dish Detail Drawer */}
       {selectedDish && (
