@@ -111,7 +111,7 @@ export default function MobileMenuPage() {
   }, [selectedCategory, searchQuery]);
 
   return (
-    <div className="min-h-screen text-white font-sans selection:bg-amber-500 selection:text-black pb-20 bg-doodle relative">
+    <div className="min-h-screen text-white font-sans selection:bg-amber-500 selection:text-black pb-28 bg-doodle relative">
       {/* ======================================================== */}
       {/* 🚀 ROCK-SOLID STICKY HEADER & CATEGORY DECK              */}
       {/* ======================================================== */}
@@ -208,7 +208,7 @@ export default function MobileMenuPage() {
             </div>
           </div>
 
-          {/* Search Input Bar (Permanently inside sticky header - Zero Layout Jitter!) */}
+          {/* Search Input Bar (Permanently inside sticky header) */}
           <div className="pb-2 pt-1">
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
@@ -290,9 +290,9 @@ export default function MobileMenuPage() {
       </header>
 
       {/* ======================================================== */}
-      {/* MAIN CONTENT AREA                                        */}
+      {/* 2-COLUMN MODERN GRID MENU CARDS (Requested Visual Format)*/}
       {/* ======================================================== */}
-      <main className="max-w-md mx-auto px-4 pt-3 space-y-4">
+      <main className="max-w-md mx-auto px-3.5 pt-3 space-y-4">
         {/* No Items Found State */}
         {filteredItems.length === 0 && (
           <div className="text-center py-16 bg-[#121217]/80 rounded-3xl border border-white/5 p-6 mt-4">
@@ -312,25 +312,23 @@ export default function MobileMenuPage() {
           </div>
         )}
 
-        {/* ======================================================== */}
-        {/* SHOWCASE MAGAZINE CARDS (Cinematic & Rich)               */}
-        {/* ======================================================== */}
+        {/* 2-Column Responsive Grid */}
         {filteredItems.length > 0 && (
-          <div className="space-y-5 pt-1">
+          <div className="grid grid-cols-2 gap-3 pt-0.5">
             {filteredItems.map((dish, index) => {
               const currentPrice = getItemPrice(dish);
               const hasCheese = !!cheeseMap[dish.id];
               const isVegDish = dish.dietary === 'veg';
 
               return (
-                <article
+                <div
                   key={dish.id}
                   onClick={() => setSelectedDish(dish)}
-                  style={{ animationDelay: `${index * 25}ms` }}
-                  className="group relative bg-gradient-to-b from-[#181822]/95 to-[#121219]/95 card-luxury-border rounded-[28px] overflow-hidden transition-all duration-300 shadow-2xl active:scale-[0.99] cursor-pointer animate-spring"
+                  style={{ animationDelay: `${index * 20}ms` }}
+                  className="group relative bg-[#13141c]/95 border border-white/10 hover:border-amber-500/40 rounded-2xl overflow-hidden shadow-xl active:scale-[0.98] cursor-pointer flex flex-col justify-between transition-all duration-300 animate-spring"
                 >
-                  {/* Top Food Photography Canvas */}
-                  <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-zinc-950">
+                  {/* Top Square / 4:3 Food Photo */}
+                  <div className="relative h-40 sm:h-44 w-full bg-zinc-950 overflow-hidden">
                     <img
                       src={dish.image}
                       alt={dish.name}
@@ -338,198 +336,121 @@ export default function MobileMenuPage() {
                       onError={(e) => {
                         e.currentTarget.src = FALLBACK_FOOD_IMG;
                       }}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-108"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-108"
                     />
 
-                    {/* Gradient Vignettes */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#14141d] via-black/20 to-black/60 pointer-events-none" />
-                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#181822] to-transparent pointer-events-none" />
+                    {/* Gradient Vignette */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#13141c] via-transparent to-black/60 pointer-events-none" />
 
-                    {/* Top Overlaid Badges */}
-                    <div className="absolute top-3.5 left-3.5 right-3.5 flex items-start justify-between gap-2 z-10 pointer-events-none">
-                      {/* Dietary & Category Pill */}
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span
-                          className={`glass-pill px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg ${
-                            isVegDish
-                              ? 'text-emerald-400 border-emerald-500/30'
-                              : 'text-rose-400 border-rose-500/30'
+                    {/* Top-Left: Dietary Dot in Square (Red Non-Veg / Green Veg) */}
+                    <div className="absolute top-2.5 left-2.5 z-10 pointer-events-none">
+                      <div
+                        className={`w-4 h-4 rounded-xs border-2 flex items-center justify-center shrink-0 bg-black/75 shadow-md ${
+                          isVegDish ? 'border-emerald-500' : 'border-rose-500'
+                        }`}
+                      >
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            isVegDish ? 'bg-emerald-500' : 'bg-rose-500'
                           }`}
-                        >
-                          <span
-                            className={`w-2 h-2 rounded-full ${
-                              isVegDish ? 'bg-emerald-400 shadow-sm shadow-emerald-400/50' : 'bg-rose-500 shadow-sm shadow-rose-500/50'
-                            }`}
-                          />
-                          <span>{isVegDish ? '100% Pure Veg' : 'Chicken'}</span>
-                        </span>
-
-                        {dish.isChefSpecial && (
-                          <span className="bg-gradient-to-r from-amber-500 to-amber-400 text-zinc-950 text-[10px] font-black uppercase px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
-                            <Sparkles className="w-3 h-3 fill-zinc-950" />
-                            <span>Bestseller</span>
-                          </span>
-                        )}
+                        />
                       </div>
+                    </div>
 
-                      {/* Floating Luxury Price Badge */}
-                      <div className="glass-pill px-3 py-1.5 rounded-2xl flex items-center gap-1 border border-amber-400/30 shadow-xl bg-black/70 backdrop-blur-md">
-                        <span className="text-[11px] text-amber-400/80 font-bold">₹</span>
-                        <span className="text-base sm:text-lg font-black text-amber-400 tracking-tight">
+                    {/* Top-Right: Solid Golden-Amber Price Pill */}
+                    <div className="absolute top-2.5 right-2.5 z-10 pointer-events-none">
+                      <div className="bg-black/80 backdrop-blur-md px-2.5 py-1 rounded-xl border border-amber-400/40 shadow-lg flex items-center gap-0.5">
+                        <span className="text-[11px] font-black text-amber-400">₹</span>
+                        <span className="text-xs sm:text-sm font-black text-amber-400 tracking-tight">
                           {currentPrice}
                         </span>
                       </div>
                     </div>
 
-                    {/* Bottom Overlaid Badges on Image */}
-                    <div className="absolute bottom-3 left-3.5 right-3.5 flex items-end justify-between gap-2 z-10 pointer-events-none">
-                      {/* Piece Count Pill */}
-                      {dish.pieceCount ? (
-                        <span className="bg-black/75 backdrop-blur-md text-amber-300 text-[10px] font-black uppercase px-2.5 py-1 rounded-xl border border-amber-400/25 shadow-md flex items-center gap-1">
-                          <span>🍗</span>
-                          <span>{dish.pieceCount}</span>
-                        </span>
-                      ) : (
-                        <span className="bg-black/75 backdrop-blur-md text-zinc-300 text-[10px] font-bold uppercase px-2.5 py-1 rounded-xl border border-white/10 shadow-md">
-                          {dish.category}
-                        </span>
-                      )}
-
-                      {/* Spiciness & Rating Indicator */}
-                      <div className="flex items-center gap-1.5">
-                        {dish.spiceLevel > 0 && (
-                          <div className="bg-black/75 backdrop-blur-md px-2 py-1 rounded-xl border border-rose-500/30 flex items-center gap-0.5" title="Spiciness">
-                            {Array.from({ length: dish.spiceLevel }).map((_, i) => (
-                              <Flame key={i} className="w-3 h-3 fill-rose-500 text-rose-500" />
-                            ))}
-                          </div>
-                        )}
-
-                        {dish.rating && (
-                          <div className="bg-black/75 backdrop-blur-md px-2.5 py-1 rounded-xl border border-amber-400/30 flex items-center gap-1 text-[11px] font-black text-amber-400 shadow-sm">
-                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                            <span>{dish.rating.toFixed(1)}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    {/* Piece Count Pill on bottom of photo if applicable */}
+                    {dish.pieceCount && (
+                      <span className="absolute bottom-2 left-2 z-10 bg-black/85 backdrop-blur-md text-amber-300 text-[9px] font-black uppercase px-2 py-0.5 rounded-md border border-amber-500/30 shadow-md">
+                        {dish.pieceCount}
+                      </span>
+                    )}
                   </div>
 
                   {/* Card Content Body */}
-                  <div className="p-4 sm:p-5 space-y-3">
-                    {/* Dish Title & Category Line */}
+                  <div className="p-3 flex-1 flex flex-col justify-between">
                     <div>
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-black text-lg sm:text-xl text-white tracking-tight leading-snug group-hover:text-amber-400 transition-colors">
-                          {dish.name}
-                        </h3>
-                        <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest shrink-0">
-                          {dish.category}
-                        </span>
-                      </div>
+                      {/* Dish Name */}
+                      <h3
+                        className={`font-black text-[13px] sm:text-sm leading-snug line-clamp-1 transition-colors ${
+                          dish.isChefSpecial ? 'text-amber-400' : 'text-white group-hover:text-amber-400'
+                        }`}
+                      >
+                        {dish.name}
+                      </h3>
 
-                      <p className="text-zinc-300 text-xs sm:text-[13px] font-normal leading-relaxed mt-1 line-clamp-2">
+                      {/* Truncated Description */}
+                      <p className="text-[11px] text-zinc-400 line-clamp-1 mt-1 leading-relaxed">
                         {dish.description}
                       </p>
                     </div>
 
-                    {/* Bucket Content Tag Cloud */}
-                    {dish.bucketContents && (
-                      <div className="p-2.5 bg-black/40 rounded-2xl border border-amber-500/20 space-y-1.5">
-                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-amber-400">
-                          <span>🪣 Bucket Inclusions</span>
-                          <span className="text-zinc-400">{dish.bucketContents.length} Items</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {dish.bucketContents.map((content, i) => (
-                            <span
-                              key={i}
-                              className="text-[10px] font-bold bg-amber-500/15 text-amber-300 px-2.5 py-1 rounded-lg border border-amber-500/30 flex items-center gap-1"
-                            >
-                              <span className="text-amber-400">✓</span> {content}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Interactive Veg Variant Selector (Mix Veg vs Spinach & Corn) */}
-                    {dish.vegVariants && dish.vegVariants.length > 0 && (
-                      <div
-                        onClick={(e) => e.stopPropagation()}
-                        className="space-y-1.5 p-2 bg-black/40 rounded-2xl border border-white/5"
-                      >
-                        <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block px-1">
-                          Select Variant:
-                        </span>
-                        <div className="grid grid-cols-2 gap-2">
-                          {dish.vegVariants.map((variant) => {
-                            const isVarSelected =
-                              (vegVariantMap[dish.id] || dish.vegVariants![0].name) === variant.name;
+                    {/* Bottom Action / Rating Row */}
+                    <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between gap-1">
+                      {/* Left: Interactive Cheese Toggle (for Zingers) or Veg Variant Toggle */}
+                      {dish.hasCheeseOption ? (
+                        <button
+                          type="button"
+                          onClick={(e) => toggleCheese(dish.id, e)}
+                          className={`text-[10px] font-black px-2 py-1 rounded-lg border transition-all active:scale-95 flex items-center gap-1 ${
+                            hasCheese
+                              ? 'bg-amber-500 text-zinc-950 border-amber-400 shadow-md'
+                              : 'bg-black/40 hover:bg-black/60 text-amber-300 border-amber-500/30'
+                          }`}
+                        >
+                          <span>{hasCheese ? '✓ Cheese' : '+ Cheese ₹20'}</span>
+                        </button>
+                      ) : dish.vegVariants && dish.vegVariants.length > 0 ? (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex gap-1 bg-black/40 p-0.5 rounded-lg border border-white/5"
+                        >
+                          {dish.vegVariants.map((v) => {
+                            const isVar = (vegVariantMap[dish.id] || dish.vegVariants![0].name) === v.name;
                             return (
                               <button
-                                key={variant.name}
+                                key={v.name}
                                 type="button"
-                                onClick={(e) => handleSelectVegVariant(dish.id, variant.name, e)}
-                                className={`py-1.5 px-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between border ${
-                                  isVarSelected
-                                    ? 'bg-emerald-600 text-white border-emerald-500 shadow-md scale-[1.02]'
-                                    : 'bg-zinc-900/80 text-zinc-400 border-white/5 hover:text-zinc-200'
+                                onClick={(e) => handleSelectVegVariant(dish.id, v.name, e)}
+                                className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md transition-all ${
+                                  isVar
+                                    ? 'bg-emerald-600 text-white shadow-xs'
+                                    : 'text-zinc-400 hover:text-white'
                                 }`}
                               >
-                                <span>{variant.name}</span>
-                                <span className="font-black text-white">₹{variant.price}</span>
+                                {v.name.split(' ')[0]}
                               </button>
                             );
                           })}
                         </div>
-                      </div>
-                    )}
-
-                    {/* Interactive Cheese Slice Toggle for Zingers */}
-                    {dish.hasCheeseOption && (
-                      <div
-                        onClick={(e) => toggleCheese(dish.id, e)}
-                        className={`py-2 px-3 rounded-2xl border text-xs font-bold flex items-center justify-between transition-all select-none cursor-pointer ${
-                          hasCheese
-                            ? 'bg-amber-500/20 border-amber-400 text-amber-300 shadow-md'
-                            : 'bg-black/40 hover:bg-black/60 border-white/10 text-zinc-300'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-colors ${
-                              hasCheese
-                                ? 'bg-amber-500 border-amber-500 text-zinc-950'
-                                : 'border-zinc-600 bg-zinc-900'
-                            }`}
-                          >
-                            {hasCheese && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                          </div>
-                          <span>🧀 With Cheese Slice</span>
-                        </div>
-                        <span className={`text-xs font-black ${hasCheese ? 'text-amber-400' : 'text-zinc-400'}`}>
-                          +₹20
+                      ) : dish.bucketContents ? (
+                        <span className="text-[10px] font-bold text-amber-400/90 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                          {dish.bucketContents.length} Items
                         </span>
-                      </div>
-                    )}
-
-                    {/* Card Action Footer */}
-                    <div className="pt-2 flex items-center justify-between gap-3 border-t border-white/5">
-                      <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
-                        <Clock className="w-3.5 h-3.5 text-zinc-500" />
-                        <span>Prep: {dish.prepTime}</span>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1">
-                          <span>View Details</span>
-                          <ChevronRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                      ) : (
+                        <span className="text-[10px] font-semibold text-zinc-500">
+                          Quick Bites
                         </span>
-                      </div>
+                      )}
+
+                      {/* Right: Star Rating */}
+                      {dish.rating && (
+                        <span className="ml-auto flex items-center gap-1 text-[11px] font-black text-amber-400 shrink-0">
+                          <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                          <span>{dish.rating.toFixed(1)}</span>
+                        </span>
+                      )}
                     </div>
                   </div>
-                </article>
+                </div>
               );
             })}
           </div>
@@ -554,15 +475,18 @@ export default function MobileMenuPage() {
         </div>
       </main>
 
-      {/* Floating Back to Top Button (Smooth Scroll Animation) */}
+      {/* Floating Centered Pill: Call to Order (Exact Match to User Reference) */}
+      
+
+      {/* Floating Back to Top Button */}
       {scrollY > 300 && (
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 right-4 z-40 w-11 h-11 rounded-full bg-black/85 backdrop-blur-xl border border-amber-500/40 text-amber-400 flex items-center justify-center shadow-2xl shadow-black active:scale-90 transition-all hover:bg-amber-500 hover:text-black animate-spring"
+          className="fixed bottom-20 right-4 z-40 w-10 h-10 rounded-full bg-black/85 backdrop-blur-xl border border-amber-500/40 text-amber-400 flex items-center justify-center shadow-2xl active:scale-90 transition-all hover:bg-amber-500 hover:text-black animate-spring"
           title="Back to Top"
         >
-          <ArrowUp className="w-5 h-5 stroke-[2.5]" />
+          <ArrowUp className="w-4 h-4 stroke-[2.5]" />
         </button>
       )}
 
@@ -731,15 +655,7 @@ export default function MobileMenuPage() {
               )}
 
               {/* Call to Order Button */}
-              <div className="pt-2">
-                <a
-                  href="tel:07977684202"
-                  className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-xs sm:text-sm py-3.5 px-6 rounded-full shadow-xl shadow-amber-500/30 flex items-center justify-center gap-2 transition-transform active:scale-95"
-                >
-                  <Phone className="w-4 h-4" />
-                  <span>Call to Order • 079776 84202</span>
-                </a>
-              </div>
+              
             </div>
           </div>
         </div>
